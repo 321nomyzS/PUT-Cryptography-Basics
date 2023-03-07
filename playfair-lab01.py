@@ -1,17 +1,12 @@
 import re
 
 # Zdefiniuj stałe
-ALPHABET = "abcdefghiklmnopqrstuvwxyz"
 KEY = "szyfr"
-SECRET = "gaderypoluki"
 
 
 class PlayFair:
-    def __init__(self, key, alphabet):
-        missing_letters = [letter for letter in alphabet if letter not in set(key)]
-        key_and_remaining_alphabet = list(sorted(set(key), key=key.index)) + missing_letters
-        self.matrix = [key_and_remaining_alphabet[i:i + 5] for i in range(0, len(key_and_remaining_alphabet), 5)]
-
+    def __init__(self, key):
+        self.alphabet = "abcdefghiklmnopqrstuvwxyz"
         self.replace_chars = {
             'j': 'i',
             'ą': 'a',
@@ -25,9 +20,14 @@ class PlayFair:
             'ź': 'z'
         }
 
+        # Creating playfair matrix
+        missing_letters = [letter for letter in self.alphabet if letter not in set(key)]
+        key_and_remaining_alphabet = list(sorted(set(key), key=key.index)) + missing_letters
+        self.matrix = [key_and_remaining_alphabet[i:i + 5] for i in range(0, len(key_and_remaining_alphabet), 5)]
+
     def __str__(self):
         result = \
-f"""
+            f"""
 ╔═══╦═══╦═══╦═══╦═══╗
 ║ {self.matrix[0][0]} ║ {self.matrix[0][1]} ║ {self.matrix[0][2]} ║ {self.matrix[0][3]} ║ {self.matrix[0][4]} ║
 ╠═══╬═══╬═══╬═══╬═══╣
@@ -45,8 +45,8 @@ f"""
     def decode(self, secret_message):
         text_to_decode = self._normalize_text(secret_message)
         decoded_text = self._decode_playfair(text_to_decode)
-        formated_text = self._format_text(secret_message, decoded_text)
-        return formated_text
+        formatted_text = self._format_text(secret_message, decoded_text)
+        return formatted_text
 
     def _find_letter_coordinates(self, letter):
         for i, row in enumerate(self.matrix):
@@ -105,9 +105,9 @@ f"""
         Usuwa polskie znaki diakrytyczne oraz znaki niebędące literami z tekstu wejściowego.
 
         :param original_text: Tekst wejściowy, który ma być znormalizowany.
-        :type original_text: str
+        :type original_text: Str.
         :return: znormalizowany tekst bez polskich znaków diakrytycznych i znaków niebędących literami.
-        :rtype: str
+        :rtype: Str
         """
         original_text = original_text.lower()
 
@@ -117,15 +117,33 @@ f"""
         return re.sub(r'[^a-z]+', '', original_text)
 
     def _format_text(self, original_text, decoded_text):
+        # Konwersja polskich znaków
         for char, replacement in self.replace_chars.items():
             original_text = original_text.replace(char, replacement)
 
+        # Sprawdzanie, czy oryginalny tekst ma parzystą, czy nieparzystą liczbę liter
         original_clean = re.sub(r'[^a-zA-Z\s]+', '', original_text)
-        original_clean += "x" * (sum([len(word) for word in original_clean.split()]) % 2)
+        odd_or_even = (sum([len(word) for word in original_clean.split()]) % 2)
 
-        return ""
+        decoded_letters = [letter for letter in decoded_text]
+
+        # Uzupełnianie tekst o symbole i wielkość liter
+        for i, letter in enumerate(original_text):
+            if letter.isalpha():
+                # Wielka litera
+                if letter.isupper():
+                    decoded_letters[i] = decoded_letters[i].upper()
+            else:
+                # Ostatni znak
+                if i == len(original_text) - 1:
+                    decoded_letters.insert(i + odd_or_even, letter)
+                # Reszta
+                else:
+                    decoded_letters.insert(i, letter)
+
+        return "".join(decoded_letters)
 
 
-playfair = PlayFair(KEY, ALPHABET)
-tekst = "Ala ma kota o imieniu Aleksander, który jest bardzo miły. Jak ma na imię?"
-playfair.decode(tekst)
+playfair = PlayFair(KEY)
+tekst = "To jest tajna wiadomość. Szyfr playfair działa nawet, gdy używamy przecinków i innych znaków specjalnych!"
+print(playfair.decode(tekst))
