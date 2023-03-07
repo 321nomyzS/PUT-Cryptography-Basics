@@ -20,6 +20,7 @@ class PlayFair:
         }
 
         # Tworzenie macierzy playfair
+        key = key.lower()
         missing_letters = [letter for letter in self.alphabet if letter not in set(key)]
         key_and_remaining_alphabet = list(sorted(set(key), key=key.index)) + missing_letters
         self.matrix = [key_and_remaining_alphabet[i:i + 5] for i in range(0, len(key_and_remaining_alphabet), 5)]
@@ -216,16 +217,16 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--file", help="Path to a file containing the text to encrypt.")
     group.add_argument("--text", help="Text to encrypt.")
-    parser.add_argument("-key", required=True, help="Playfair cipher key.")
-    parser.add_argument("-mode", choices=["encrypt", "decrypt"], required=True,
+    parser.add_argument("--key", required=True, help="Playfair cipher key.")
+    parser.add_argument("--mode", choices=["encrypt", "decrypt"], required=True,
                         help="Mode of operation: encrypt - encryption, decrypt - decryption.")
-    parser.add_argument("-show_matrix", action="store_true", help="Display Playfair matrix.")
+    parser.add_argument("--show_matrix", action="store_true", help="Display Playfair matrix.")
     args = parser.parse_args()
 
     # Ładowanie danych
     if args.file:
         try:
-            with open(args.file, "r") as f:
+            with open(args.file, "r", encoding="utf-8") as f:
                 input_text = f.read()
         except FileNotFoundError:
             sys.stderr.write(f"Cannot open file {args.file}.\n")
