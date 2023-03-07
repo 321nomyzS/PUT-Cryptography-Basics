@@ -1,4 +1,6 @@
 import re
+import argparse
+import sys
 
 
 class PlayFair:
@@ -169,3 +171,53 @@ class PlayFair:
                     decoded_letters.insert(i, letter)
 
         return "".join(decoded_letters)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Playfair cipher - an application for encrypting and decrypting text.")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--file", help="Path to a file containing the text to encrypt.")
+    group.add_argument("--text", help="Text to encrypt.")
+    parser.add_argument("-key", required=True, help="Playfair cipher key.")
+    parser.add_argument("-mode", choices=["encrypt", "decrypt"], required=True,
+                        help="Mode of operation: encrypt - encryption, decrypt - decryption.")
+    parser.add_argument("-show_matrix", action="store_true", help="Display Playfair matrix.")
+    args = parser.parse_args()
+
+    # Ładowanie danych
+    if args.file:
+        try:
+            with open(args.file, "r") as f:
+                input_text = f.read()
+        except FileNotFoundError:
+            sys.stderr.write(f"Cannot open file {args.file}.\n")
+            return
+    else:
+        input_text = args.text
+
+    # Tworzenie obiektu Playfair
+    try:
+        playfair = PlayFair(args.key)
+    except ValueError:
+        sys.stderr.write(f"Invalid key: {args.key}.\n")
+        return
+
+    # Szyfrowanie lub odszyfrowywanie tekstu
+    try:
+        if args.mode == "encrypt":
+            output_text = playfair.encode(input_text)
+        else:
+            output_text = playfair.decode(input_text)
+    except ValueError as e:
+        sys.stderr.write(str(e) + "\n")
+        return
+
+    # (opcjonalne) Wyświetlanie macierzy playfair
+    if args.show_matrix:
+        print(playfair)
+
+    print(output_text)
+
+
+if __name__ == "__main__":
+    main()
