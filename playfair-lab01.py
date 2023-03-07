@@ -1,8 +1,5 @@
 import re
 
-# Zdefiniuj stałe
-KEY = "szyfr"
-
 
 class PlayFair:
     def __init__(self, key):
@@ -44,8 +41,16 @@ class PlayFair:
 
     def decode(self, secret_message):
         text_to_decode = self._normalize_text(secret_message)
-        decoded_text = self._decode_playfair(text_to_decode)
+        decoded_text = self._playfair(text_to_decode, encrypt=True)
+        # decoded_text = self._decode_playfair(text_to_decode)
         formatted_text = self._format_text(secret_message, decoded_text)
+        return formatted_text
+
+    def encode(self, secret_message):
+        text_to_encode = self._normalize_text(secret_message)
+        # encoded_text = self._encode_playfair(text_to_encode)
+        encoded_text = self._playfair(text_to_encode, encrypt=False)
+        formatted_text = self._format_text(secret_message, encoded_text)
         return formatted_text
 
     def _find_letter_coordinates(self, letter):
@@ -56,9 +61,31 @@ class PlayFair:
             except ValueError:
                 continue
 
-    def _decode_playfair(self, secret_message):
+    def _playfair(self, secret_message, encrypt):
+        """
+            Szyfruje lub odszyfrowuje podaną wiadomość szyfrem Playfair.
+
+            :param secret_message: str
+                Wiadomość do zaszyfrowania lub odszyfrowania.
+            :param encrypt: int
+                Wartość równa True oznacza tryb szyfrowania, wartość równa False oznacza tryb odszyfrowywania.
+            :return: str
+                Zaszyfrowana lub odszyfrowana wiadomość.
+
+            Algorytm szyfrowania Playfair działa na dwuliterowych blokach tekstu jawnego.
+            Jeśli długość wiadomości nie jest parzysta, dodaje się na końcu wiadomości literę "x".
+            Następnie dla każdej pary kolejnych liter wiadomości znajduje się ich pozycje na macierzy 5×5.
+            W zależności od wzajemnego położenia liter i trybu działania wyznacza się ich nowe pozycje na macierzy.
+            Ostatecznie zaszyfrowana lub odszyfrowana wiadomość składa się z liter znajdujących się na nowych pozycjach.
+
+        """
+        if encrypt:
+            mode = 1
+        else:
+            mode = -1
+
         secret_message += "x" * (len(secret_message) % 2)
-        decoded_text = ""
+        encoded_text = ""
 
         for i in range(0, len(secret_message), 2):
             letter_1, letter_2 = secret_message[i], secret_message[i + 1]
@@ -68,23 +95,23 @@ class PlayFair:
             # Te same litery
             if letter_1 == letter_2:
                 x, y = start_position_1
-                final_position_1 = final_position_2 = x, (y + 1) % 5
+                final_position_1 = final_position_2 = x, (y + mode) % 5
 
             # Ta sama kolumna
             elif start_position_1[0] == start_position_2[0]:
                 x, y = start_position_1
-                final_position_1 = x, (y + 1) % 5
+                final_position_1 = x, (y + mode) % 5
 
                 x, y = start_position_2
-                final_position_2 = x, (y + 1) % 5
+                final_position_2 = x, (y + mode) % 5
 
             # Ten sam rząd
             elif start_position_1[1] == start_position_2[1]:
                 x, y = start_position_1
-                final_position_1 = (x + 1) % 5, y
+                final_position_1 = (x + mode) % 5, y
 
                 x, y = start_position_2
-                final_position_2 = (x + 1) % 5, y
+                final_position_2 = (x + mode) % 5, y
 
             # Różny rząd i różna kolumna
             else:
@@ -96,9 +123,9 @@ class PlayFair:
 
             final_letter_1 = self.matrix[final_position_1[0]][final_position_1[1]]
             final_letter_2 = self.matrix[final_position_2[0]][final_position_2[1]]
-            decoded_text += final_letter_1 + final_letter_2
+            encoded_text += final_letter_1 + final_letter_2
 
-        return decoded_text
+        return encoded_text
 
     def _normalize_text(self, original_text):
         """
@@ -142,8 +169,3 @@ class PlayFair:
                     decoded_letters.insert(i, letter)
 
         return "".join(decoded_letters)
-
-
-playfair = PlayFair(KEY)
-tekst = "To jest tajna wiadomość. Szyfr playfair działa nawet, gdy używamy przecinków i innych znaków specjalnych!"
-print(playfair.decode(tekst))
