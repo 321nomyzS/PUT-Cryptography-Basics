@@ -19,7 +19,7 @@ class PlayFair:
             'ź': 'z'
         }
 
-        # Creating playfair matrix
+        # Tworzenie macierzy playfair
         missing_letters = [letter for letter in self.alphabet if letter not in set(key)]
         key_and_remaining_alphabet = list(sorted(set(key), key=key.index)) + missing_letters
         self.matrix = [key_and_remaining_alphabet[i:i + 5] for i in range(0, len(key_and_remaining_alphabet), 5)]
@@ -42,20 +42,45 @@ class PlayFair:
         return result
 
     def decode(self, secret_message):
+        """
+        Rozszyfrowuje zaszyfrowaną wiadomość przy pomocy algorytmu Playfair.
+
+        :param secret_message: Zaszyfrowana wiadomość, która ma być odszyfrowana.
+        :type secret_message: str
+        :return: Odszyfrowana wiadomość.
+        :rtype: str
+        """
+
         text_to_decode = self._normalize_text(secret_message)
-        decoded_text = self._playfair(text_to_decode, encrypt=True)
-        # decoded_text = self._decode_playfair(text_to_decode)
+        decoded_text = self._playfair(text_to_decode, encrypt=False)
         formatted_text = self._format_text(secret_message, decoded_text)
         return formatted_text
 
     def encode(self, secret_message):
+        """
+        Szyfruje podaną wiadomość przy pomocy algorytmu Playfair.
+
+        :param secret_message: Wiadomość, która ma być zaszyfrowana.
+        :type secret_message: str
+        :return: Zaszyfrowana wiadomość.
+        :rtype: str
+        """
+
         text_to_encode = self._normalize_text(secret_message)
-        # encoded_text = self._encode_playfair(text_to_encode)
-        encoded_text = self._playfair(text_to_encode, encrypt=False)
+        encoded_text = self._playfair(text_to_encode, encrypt=True)
         formatted_text = self._format_text(secret_message, encoded_text)
         return formatted_text
 
     def _find_letter_coordinates(self, letter):
+        """
+        Funkcja _find_letter_coordinates służy do znajdowania współrzędnych podanej litery w macierzy Playfair.
+        W przypadku braku litery w macierzy funkcja zwraca wartość None.
+
+        :param letter: Litera, dla której mają zostać znalezione współrzędne.
+        :type letter: str
+        :return: Współrzędne litery w macierzy Playfair.
+        :rtype: Tuple[int, int] lub None, gdy litera nie znajduje się w macierzy.
+        """
         for i, row in enumerate(self.matrix):
             try:
                 position = row.index(letter)
@@ -134,18 +159,31 @@ class PlayFair:
         Usuwa polskie znaki diakrytyczne oraz znaki niebędące literami z tekstu wejściowego.
 
         :param original_text: Tekst wejściowy, który ma być znormalizowany.
-        :type original_text: Str.
+        :type original_text: str
         :return: znormalizowany tekst bez polskich znaków diakrytycznych i znaków niebędących literami.
-        :rtype: Str
+        :rtype: str
         """
         original_text = original_text.lower()
 
+        # Konwersja polskich znaków
         for char, replacement in self.replace_chars.items():
             original_text = original_text.replace(char, replacement)
 
         return re.sub(r'[^a-z]+', '', original_text)
 
     def _format_text(self, original_text, decoded_text):
+        """
+        Funkcja _format_text służy do uzupełnienia zaszyfrowanej wiadomości o odpowiednie znaki,
+        tak aby była w takim samym formacie co oryginalny tekst.
+
+        :param original_text: Oryginalny tekst, do którego porównujemy zaszyfrowaną wiadomość.
+        :type original_text: str
+        :param decoded_text: Zaszyfrowana wiadomość.
+        :type decoded_text: str
+        :return: Zaszyfrowana wiadomość uzupełniona o odpowiednie znaki, aby była w takim samym formacie co oryginalny tekst.
+        :rtype: str
+        """
+
         # Konwersja polskich znaków
         for char, replacement in self.replace_chars.items():
             original_text = original_text.replace(char, replacement)
