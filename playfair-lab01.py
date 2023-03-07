@@ -19,8 +19,10 @@ class PlayFair:
             'ź': 'z'
         }
 
+        # Konwersja klucza
+        key = self._normalize_text(key)
+
         # Tworzenie macierzy playfair
-        key = key.lower()
         missing_letters = [letter for letter in self.alphabet if letter not in set(key)]
         key_and_remaining_alphabet = list(sorted(set(key), key=key.index)) + missing_letters
         self.matrix = [key_and_remaining_alphabet[i:i + 5] for i in range(0, len(key_and_remaining_alphabet), 5)]
