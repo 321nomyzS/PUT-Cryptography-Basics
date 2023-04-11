@@ -1,10 +1,7 @@
 import unittest
+import argparse
 from bbs import BBS
 from math import gcd
-
-p = 26183
-q = 11887
-seed = 2023
 
 
 def _join_neighbors(lst):
@@ -26,7 +23,13 @@ def _join_neighbors(lst):
 
 class TestBBS(unittest.TestCase):
     def setUp(self):
-        self.bbs = BBS(p=p, q=q, seed=seed)
+        parser = argparse.ArgumentParser(description='Test the BBS algorithm')
+        parser.add_argument('-p', type=int, default=0, help='the value of p (default: 0)')
+        parser.add_argument('-q', type=int, default=0, help='the value of q (default: 0)')
+        parser.add_argument('-s', '--seed', type=int, default=0, help='the seed value (default: 0)')
+        self.args = parser.parse_args()
+
+        self.bbs = BBS(p=self.args.p, q=self.args.q, seed=self.args.seed)
         self.bbs.generating_random_number(20_000)
 
     def test_p_q_seed(self):
@@ -91,4 +94,4 @@ class TestBBS(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(argv=['first-arg-is-ignored'], exit=False)

@@ -1,3 +1,7 @@
+import argparse
+import random
+
+
 class BBS:
     def __init__(self, p, q, seed):
         self.p = p
@@ -16,7 +20,16 @@ class BBS:
 
 
 def main():
-    bbs = BBS(26183, 11887, 2023)
+    parser = argparse.ArgumentParser(description='Generate a random sequence of 0s and 1s using the BBS algorithm')
+    parser.add_argument('num_bits', type=int, help='the number of bits to generate')
+    parser.add_argument('-p', type=int, default=26183, help='the value of p (default: 26183)')
+    parser.add_argument('-q', type=int, default=11887, help='the value of q (default: 11887)')
+    parser.add_argument('-s', '--seed', type=int, default=random.randint(1, 10000),
+                        help='the seed value (default: a random integer between 1 and 10000)')
+
+    args = parser.parse_args()
+
+    bbs = BBS(p=args.p, q=args.q, seed=args.seed)
     print(bbs.generating_random_number(1000))
 
 
